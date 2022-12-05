@@ -12,8 +12,19 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetManyTodo(c *gin.Context) {
-	data, err := database.ReadJSON()
+type ControllersInterface interface {
+	GetManyTodo(c *gin.Context)
+	AddTodo(c *gin.Context)
+	EditTodo(c *gin.Context)
+	DeleteTodo(c *gin.Context)
+}
+
+type ControllersStruct struct {
+	DataBaseModelInterface database.DataBaseModelInterface
+}
+
+func (controller *ControllersStruct) GetManyTodo(c *gin.Context) {
+	data, err := controller.DataBaseModelInterface.ReadJSON()
 
 	if err != nil {
 		c.Error(err)
@@ -23,7 +34,7 @@ func GetManyTodo(c *gin.Context) {
 
 }
 
-func AddTodo(c *gin.Context) {
+func (controller *ControllersStruct) AddTodo(c *gin.Context) {
 	jsonData, err := ioutil.ReadAll(c.Request.Body)
 	if err != nil {
 		fmt.Println("err", err)
@@ -32,7 +43,7 @@ func AddTodo(c *gin.Context) {
 	var data database.Data
 	err = json.Unmarshal(jsonData, &data)
 
-	result, err := database.WriterTodo(data)
+	result, err := controller.DataBaseModelInterface.WriterTodo(data)
 
 	if err != nil {
 		c.Error(err)
@@ -41,7 +52,7 @@ func AddTodo(c *gin.Context) {
 	c.JSON(http.StatusOK, result)
 }
 
-func EditTodo(c *gin.Context) {
+func (controller *ControllersStruct) EditTodo(c *gin.Context) {
 
 	id := c.Param("id")
 
@@ -60,7 +71,7 @@ func EditTodo(c *gin.Context) {
 		return
 	}
 
-	result, err := database.FindToDoById(int64(idInt))
+	result, err := controller.DataBaseModelInterface.FindToDoById(int64(idInt))
 
 	result.Title = data.Title
 	result.Description = data.Description
@@ -71,12 +82,12 @@ func EditTodo(c *gin.Context) {
 		return
 	}
 
-	updatedData, err := database.UpdateTodo(result)
+	updatedData, err := controller.DataBaseModelInterface.UpdateTodo(result)
 
 	c.JSON(http.StatusOK, updatedData)
 }
 
-func DeleteTodo(c *gin.Context) {
+func (controller *ControllersStruct) DeleteTodo(c *gin.Context) {
 	id := c.Param("id")
 
 	idInt, err := strconv.Atoi(id)
@@ -86,7 +97,7 @@ func DeleteTodo(c *gin.Context) {
 		return
 	}
 
-	idReturn, err := database.DeleteTodoById(int64(idInt))
+	idReturn, err := controller.DataBaseModelInterface.DeleteTodoById(int64(idInt))
 
 	if err != nil {
 
