@@ -6,11 +6,19 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type RoutersInterface interface {
+	TodoRouters()
+}
+
+type TodoRoutersStruct struct {
+	ControllersInterface controllers.ControllersInterface
+}
+
 var R = gin.Default()
 
-func TodoRouters() {
-	R.GET("/", controllers.GetManyTodo)
-	R.POST("/add", controllers.AddTodo)
-	R.PATCH("/:id", controllers.EditTodo)
-	R.DELETE("/:id", controllers.DeleteTodo)
+func (r *TodoRoutersStruct) TodoRouters() {
+	R.GET("/", r.ControllersInterface.GetManyTodo)
+	R.POST("/add", r.ControllersInterface.AddTodo)
+	R.PATCH("/:id", r.ControllersInterface.EditTodo)
+	R.DELETE("/:id", r.ControllersInterface.DeleteTodo)
 }

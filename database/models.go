@@ -16,7 +16,18 @@ type Data struct {
 	IsCompleted bool
 }
 
-func ReadJSON() ([]Data, error) {
+type DataBaseModelInterface interface {
+	ReadJSON() ([]Data, error)
+	WriterTodo(data Data) (Data, error)
+	FindToDoById(id int64) (Data, error)
+	UpdateTodo(data Data) (Data, error)
+	DeleteTodoById(id int64) (int64, error)
+	FindIndexTodoById(todos []Data, id int64) int
+}
+
+type DataBaseModelStruct struct{}
+
+func (db *DataBaseModelStruct) ReadJSON() ([]Data, error) {
 
 	byteValue, err := ioutil.ReadFile("database/db.json")
 	var dataTodo []Data
@@ -29,7 +40,7 @@ func ReadJSON() ([]Data, error) {
 	return dataTodo, err
 }
 
-func WriterTodo(data Data) (Data, error) {
+func (db *DataBaseModelStruct) WriterTodo(data Data) (Data, error) {
 
 	todo := Data{}
 	todo.Id = time.Now().Unix()
@@ -37,7 +48,7 @@ func WriterTodo(data Data) (Data, error) {
 	todo.Title = data.Title
 	todo.IsCompleted = data.IsCompleted || false
 
-	listTodo, err := ReadJSON()
+	listTodo, err := db.ReadJSON()
 
 	listTodo = append(listTodo, todo)
 
@@ -54,9 +65,9 @@ func WriterTodo(data Data) (Data, error) {
 	return todo, err
 }
 
-func FindToDoById(id int64) (Data, error) {
+func (db *DataBaseModelStruct) FindToDoById(id int64) (Data, error) {
 
-	listTodo, err := ReadJSON()
+	listTodo, err := db.ReadJSON()
 
 	var todo Data
 
@@ -70,9 +81,9 @@ func FindToDoById(id int64) (Data, error) {
 
 }
 
-func UpdateTodo(data Data) (Data, error) {
+func (db *DataBaseModelStruct) UpdateTodo(data Data) (Data, error) {
 
-	listTodo, err := ReadJSON()
+	listTodo, err := db.ReadJSON()
 
 	for i, v := range listTodo {
 
@@ -95,11 +106,11 @@ func UpdateTodo(data Data) (Data, error) {
 
 }
 
-func DeleteTodoById(id int64) (int64, error) {
+func (db *DataBaseModelStruct) DeleteTodoById(id int64) (int64, error) {
 
-	listTodo, err := ReadJSON()
+	listTodo, err := db.ReadJSON()
 
-	index := FindIndexTodoById(listTodo, id)
+	index := db.FindIndexTodoById(listTodo, id)
 	if index != -1 {
 		listTodo = append(listTodo[:index], listTodo[index+1:]...)
 
@@ -121,7 +132,7 @@ func DeleteTodoById(id int64) (int64, error) {
 
 }
 
-func FindIndexTodoById(todos []Data, id int64) int {
+func (db *DataBaseModelStruct) FindIndexTodoById(todos []Data, id int64) int {
 
 	for i, v := range todos {
 		if id == v.Id {
