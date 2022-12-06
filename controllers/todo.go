@@ -25,8 +25,6 @@ type ControllersStruct struct {
 func (controller *ControllersStruct) GetManyTodo(c *gin.Context) {
 	data, err := controller.DataBaseInterface.Read()
 
-	fmt.Println("TEST", data)
-
 	if err != nil {
 		c.Error(err)
 		return
@@ -42,6 +40,7 @@ func (controller *ControllersStruct) AddTodo(c *gin.Context) {
 	}
 
 	var data database.Data
+
 	err = json.Unmarshal(jsonData, &data)
 
 	result, err := controller.DataBaseInterface.Write(data)
