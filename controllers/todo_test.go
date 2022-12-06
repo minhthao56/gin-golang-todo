@@ -1,12 +1,14 @@
 package controllers
 
 import (
+	"encoding/json"
 	"gin-golang/database"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -19,51 +21,57 @@ type DataBaseModelStructMock struct {
 	mock.Mock
 }
 
-func (db *DataBaseModelStructMock) ReadJSON() ([]database.Data, error) {
+func creatMockDataRespJSON() ([]database.Data, database.Data) {
 	var data []database.Data
+	var mockData database.Data
+	mockData.Id = 1
+	mockData.Description = "Description"
+	mockData.Title = "Title"
+	mockData.IsCompleted = false
+	data = append(data, mockData)
+	return data, mockData
+}
+
+func (db *DataBaseModelStructMock) Read() ([]database.Data, error) {
+	data, _ := creatMockDataRespJSON()
+
 	args := db.Called()
 	return data, args.Error(1)
 
 }
 
-func (db *DataBaseModelStructMock) WriterTodo(data database.Data) (database.Data, error) {
+func (db *DataBaseModelStructMock) Write(data database.Data) (database.Data, error) {
+
 	args := db.Called()
 	return data, args.Error(1)
 
 }
 
-func (db *DataBaseModelStructMock) FindToDoById(id int64) (database.Data, error) {
+func (db *DataBaseModelStructMock) Delete(id int64) (int64, error) {
 	args := db.Called()
-	var data database.Data
-	return data, args.Error(1)
-
+	return id, args.Error(1)
 }
 
-func (db *DataBaseModelStructMock) UpdateTodo(data database.Data) (database.Data, error) {
+func (db *DataBaseModelStructMock) Update(data database.Data) (database.Data, error) {
 	args := db.Called()
 	return data, args.Error(1)
-
 }
 
-func (db *DataBaseModelStructMock) DeleteTodoById(id int64) (int64, error) {
-	args := db.Called()
-	return int64(args.Int(0)), args.Error(1)
+func (db *DataBaseModelStructMock) ReadOne(id int64) (database.Data, error) {
+	_, mockDatOne := creatMockDataRespJSON()
 
-}
-
-func (db *DataBaseModelStructMock) FindIndexTodoById(todos []database.Data, id int64) int {
 	args := db.Called()
-	return args.Int(0)
+	return mockDatOne, args.Error(1)
 }
 
 func TestGetManyController(t *testing.T) {
-	var data []database.Data
+	data, _ := creatMockDataRespJSON()
 	mockBD := new(DataBaseModelStructMock)
 
-	mockBD.On("ReadJSON").Return(data, nil)
+	mockBD.On("Read").Return(data, nil)
 
 	controller := ControllersStruct{
-		DataBaseModelInterface: mockBD,
+		DataBaseInterface: mockBD,
 	}
 
 	r := SetUpRouter()
@@ -72,6 +80,10 @@ func TestGetManyController(t *testing.T) {
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
-	mockBD.AssertNumberOfCalls(t, "ReadJSON", 1)
+	res, _ := json.Marshal(data)
+
+	mockBD.AssertNumberOfCalls(t, "Read", 1)
+	assert.Equal(t, 200, w.Code)
+	assert.Equal(t, string(res), w.Body.String())
 
 }

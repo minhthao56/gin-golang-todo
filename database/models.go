@@ -15,19 +15,9 @@ type Data struct {
 	Description string
 	IsCompleted bool
 }
-
-type DataBaseModelInterface interface {
-	ReadJSON() ([]Data, error)
-	WriterTodo(data Data) (Data, error)
-	FindToDoById(id int64) (Data, error)
-	UpdateTodo(data Data) (Data, error)
-	DeleteTodoById(id int64) (int64, error)
-	FindIndexTodoById(todos []Data, id int64) int
-}
-
 type DataBaseModelStruct struct{}
 
-func (db *DataBaseModelStruct) ReadJSON() ([]Data, error) {
+func (db *DataBaseModelStruct) Read() ([]Data, error) {
 
 	byteValue, err := ioutil.ReadFile("database/db.json")
 	var dataTodo []Data
@@ -40,7 +30,7 @@ func (db *DataBaseModelStruct) ReadJSON() ([]Data, error) {
 	return dataTodo, err
 }
 
-func (db *DataBaseModelStruct) WriterTodo(data Data) (Data, error) {
+func (db *DataBaseModelStruct) Write(data Data) (Data, error) {
 
 	todo := Data{}
 	todo.Id = time.Now().Unix()
@@ -48,7 +38,7 @@ func (db *DataBaseModelStruct) WriterTodo(data Data) (Data, error) {
 	todo.Title = data.Title
 	todo.IsCompleted = data.IsCompleted || false
 
-	listTodo, err := db.ReadJSON()
+	listTodo, err := db.Read()
 
 	listTodo = append(listTodo, todo)
 
@@ -65,25 +55,9 @@ func (db *DataBaseModelStruct) WriterTodo(data Data) (Data, error) {
 	return todo, err
 }
 
-func (db *DataBaseModelStruct) FindToDoById(id int64) (Data, error) {
+func (db *DataBaseModelStruct) Update(data Data) (Data, error) {
 
-	listTodo, err := db.ReadJSON()
-
-	var todo Data
-
-	for _, v := range listTodo {
-		if v.Id == id {
-			todo = v
-		}
-	}
-
-	return todo, err
-
-}
-
-func (db *DataBaseModelStruct) UpdateTodo(data Data) (Data, error) {
-
-	listTodo, err := db.ReadJSON()
+	listTodo, err := db.Read()
 
 	for i, v := range listTodo {
 
@@ -106,11 +80,11 @@ func (db *DataBaseModelStruct) UpdateTodo(data Data) (Data, error) {
 
 }
 
-func (db *DataBaseModelStruct) DeleteTodoById(id int64) (int64, error) {
+func (db *DataBaseModelStruct) Delete(id int64) (int64, error) {
 
-	listTodo, err := db.ReadJSON()
+	listTodo, err := db.Read()
 
-	index := db.FindIndexTodoById(listTodo, id)
+	index := db.ReadOneIndex(listTodo, id)
 	if index != -1 {
 		listTodo = append(listTodo[:index], listTodo[index+1:]...)
 
@@ -132,7 +106,7 @@ func (db *DataBaseModelStruct) DeleteTodoById(id int64) (int64, error) {
 
 }
 
-func (db *DataBaseModelStruct) FindIndexTodoById(todos []Data, id int64) int {
+func (db *DataBaseModelStruct) ReadOneIndex(todos []Data, id int64) int {
 
 	for i, v := range todos {
 		if id == v.Id {
@@ -140,4 +114,18 @@ func (db *DataBaseModelStruct) FindIndexTodoById(todos []Data, id int64) int {
 		}
 	}
 	return -1
+}
+
+func (db *DataBaseModelStruct) ReadOne(id int64) (Data, error) {
+
+	listTodo, err := db.Read()
+	var todo Data
+
+	for _, v := range listTodo {
+		if v.Id == id {
+			todo = v
+		}
+	}
+	return todo, err
+
 }

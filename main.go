@@ -4,14 +4,18 @@ import (
 	"gin-golang/controllers"
 	"gin-golang/database"
 	"gin-golang/routers"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
 	r := &routers.TodoRoutersStruct{
+		R: gin.Default(),
 		ControllersInterface: &controllers.ControllersStruct{
-			DataBaseModelInterface: &database.DataBaseModelStruct{},
-		}}
+			DataBaseInterface: &database.DataBaseModelStruct{},
+		},
+	}
 
 	r.TodoRouters()
-	routers.R.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
+	r.R.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }

@@ -1,24 +1,24 @@
 package routers
 
 import (
-	"gin-golang/controllers"
-
 	"github.com/gin-gonic/gin"
 )
 
-type RoutersInterface interface {
-	TodoRouters()
+type ControllersInterface interface {
+	GetManyTodo(c *gin.Context)
+	AddTodo(c *gin.Context)
+	EditTodo(c *gin.Context)
+	DeleteTodo(c *gin.Context)
 }
 
 type TodoRoutersStruct struct {
-	ControllersInterface controllers.ControllersInterface
+	R                    *gin.Engine
+	ControllersInterface ControllersInterface
 }
 
-var R = gin.Default()
-
 func (r *TodoRoutersStruct) TodoRouters() {
-	R.GET("/", r.ControllersInterface.GetManyTodo)
-	R.POST("/add", r.ControllersInterface.AddTodo)
-	R.PATCH("/:id", r.ControllersInterface.EditTodo)
-	R.DELETE("/:id", r.ControllersInterface.DeleteTodo)
+	r.R.GET("/", r.ControllersInterface.GetManyTodo)
+	r.R.POST("/add", r.ControllersInterface.AddTodo)
+	r.R.PATCH("/:id", r.ControllersInterface.EditTodo)
+	r.R.DELETE("/:id", r.ControllersInterface.DeleteTodo)
 }
