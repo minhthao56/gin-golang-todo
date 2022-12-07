@@ -35,7 +35,6 @@ func TestTodoRouters(t *testing.T) {
 	req, _ := http.NewRequest(http.MethodGet, "/", nil)
 	c.Request = req
 	controlMock.On("GetManyTodo", c).Return()
-
 	router := TodoRoutersStruct{
 		R:                    r,
 		ControllersInterface: controlMock,

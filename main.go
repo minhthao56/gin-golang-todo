@@ -4,6 +4,7 @@ import (
 	"gin-golang/controllers"
 	"gin-golang/database"
 	"gin-golang/routers"
+	"os"
 
 	"github.com/gin-gonic/gin"
 )
@@ -12,7 +13,10 @@ func main() {
 	r := &routers.TodoRoutersStruct{
 		R: gin.Default(),
 		ControllersInterface: &controllers.ControllersStruct{
-			DataBaseInterface: &database.DataBaseModelStruct{},
+			DataBaseInterface: &database.DataBaseModelStruct{
+				IoReader: os.ReadFile,
+				IoWriter: os.WriteFile,
+			},
 		},
 	}
 

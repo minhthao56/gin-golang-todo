@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io/fs"
 	"log"
 	"time"
 )
@@ -15,11 +15,15 @@ type Data struct {
 	Description string
 	IsCompleted bool
 }
-type DataBaseModelStruct struct{}
+
+type DataBaseModelStruct struct {
+	IoReader func(filename string) ([]byte, error)
+	IoWriter func(filename string, data []byte, perm fs.FileMode) error
+}
 
 func (db *DataBaseModelStruct) Read() ([]Data, error) {
 
-	byteValue, err := ioutil.ReadFile("database/db.json")
+	byteValue, err := db.IoReader("database/db.json")
 	var dataTodo []Data
 	err = json.Unmarshal(byteValue, &dataTodo)
 
@@ -47,7 +51,7 @@ func (db *DataBaseModelStruct) Write(data Data) (Data, error) {
 	if err != nil {
 		fmt.Println(err)
 	}
-	err = ioutil.WriteFile("database/db.json", content, 0644)
+	err = db.IoWriter("database/db.json", content, 0644)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -65,13 +69,12 @@ func (db *DataBaseModelStruct) Update(data Data) (Data, error) {
 			listTodo[i] = data
 		}
 	}
-
 	content, err := json.Marshal(listTodo)
 
 	if err != nil {
 		fmt.Println(err)
 	}
-	err = ioutil.WriteFile("database/db.json", content, 0644)
+	err = db.IoWriter("database/db.json", content, 0644)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -93,7 +96,7 @@ func (db *DataBaseModelStruct) Delete(id int64) (int64, error) {
 		if err != nil {
 			fmt.Println(err)
 		}
-		err = ioutil.WriteFile("database/db.json", content, 0644)
+		err = db.IoWriter("database/db.json", content, 0644)
 		if err != nil {
 			log.Fatal(err)
 		}

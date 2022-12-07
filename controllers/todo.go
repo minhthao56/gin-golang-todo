@@ -23,6 +23,8 @@ type ControllersStruct struct {
 }
 
 func (controller *ControllersStruct) GetManyTodo(c *gin.Context) {
+	fmt.Println("------GetManyTodo-----", c)
+
 	data, err := controller.DataBaseInterface.Read()
 
 	if err != nil {
